@@ -15,7 +15,7 @@ var defaults = {
     data: data,
     // 颜色的数组  {Array}  ['#ff', 'red']
     color: colorArr,
-    // 多少个data 分一组  Number
+    // 多少个data 分一组  Number 关乎弹幕的上下密集度
     groupSlice: 5,
     // 多少毫秒秒增加一次dom  这个关乎到弹幕的左右间距（ 密集度 ）
     addIntervar: 3000,
