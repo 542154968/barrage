@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>弹幕demo</title>
+    <style>
+			/* 弹幕 */
+        #barrage{position:fixed;z-index:-1;top:0;right:0;left:0;bottom:0;font-size:18px;text-shadow:0 0 1px #666}.barrager-item{position:absolute;color:#fff}.hide-barrage{position:fixed;z-index:66;bottom:10px;right:10px;color:#fff;background:#eb6120;border:none;font-size:14px;border-radius:4px;padding:6px 5px;opacity:.6;transition:opacity .3s}.hide-barrage:hover{opacity:1}
+    </style>
+</head>
+<body>
+    <div id="barrage"> </div>
+    <button class="hide-barrage active">关闭弹幕</button>
+    <script
+        src="http://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous">
+    </script>
+    <script>
+        (function(){
+            var data = [
+                {
+                    text: '二狗蛋祝您新年快乐'
+                },
+                {
+                    text: '二狗蛋祝您发财'
+                },
+                {
+                    text: '二狗蛋祝您新春大吉'
+                },
+                {
+                    text: '新一行祝您新年快乐'
+                },
+                {
+                    text: '喜气洋洋'
+                },
+                {
+                    text: '新一行祝您新的一年发发发'
+                },
+                {
+                    text: '二狗蛋祝您新年快乐'
+                },
+                {
+                    text: '财源广进'
+                },
+                {
+                    text: '新春大吉'
+                },
+                {
+                    text: '二狗蛋祝您一路平安'
+                },
+                {
+                    text: '恭喜发财'
+                },
+                {
+                    text: '二狗蛋祝您新春大吉'
+                },
+                {
+                    text: '新的一年,新的开始;新的祝福,新的起点'
+                },
+                {
+                    text: '恭喜发财'
+                },
+                {
+                    text: '二狗蛋祝您新春大吉'
+                },
+                {
+                    text: '二狗蛋祝您新年快乐'
+                },
+                {
+                    text: '恭喜发财'
+                },
+                {
+                    text: '二狗蛋祝您新春大吉'
+                },
+                {
+                    text: '新年快乐'
+                },
+                {
+                    text: '二狗蛋祝您工作顺利'
+                },
+                {
+                    text: '新春大吉'
+                },
+                {
+                    text: '新年快乐'
+                },
+                {
+                    text: '恭喜发财'
+                },
+                {
+                    text: '二狗蛋祝您新春大吉'
+                },
+                {
+                    text: '新年快乐'
+                },
+                {
+                    text: '二狗蛋祝您一帆风顺'
+                },
+                {
+                    text: '二狗蛋祝您二龙腾飞'
+                },
+                {
+                    text: '三羊开泰'
+                },
+                {
+                    text: '二狗蛋祝您四季平安'
+                },
+                {
+                    text: '新一行祝您五福临门'
+                },
+                {
+                    text: '二狗蛋祝您六六大顺'
+                },
+                {
+                    text: '七星高照'
+                },
+                {
+                    text: '二狗蛋祝您八方来财'
+                },
+                {
+                    text: '九九同心'
+                },
+                {
+                    text: '十全十美'
+                },
+                {
+                    text: '二狗蛋祝您万事如意'
+                },
+            ];
+            
+            var colorArr = [
+                '#fff',
+                '#fef106',
+                '#05fe0e',
+                '#2cb89ff',
+                '#a072fd',
+                '#fff',
+                'red',
+                'orange',
+                '#fff'
+            ];
+
+            function Barrager( option ){
+                if( !(this instanceof Barrager) ){
+                    return new Barrager( option )
+                };
+                var defaults = {
+                    el: '#barrage',
+                    closeEl: '.hide-barrage',
+                    // 数据的数组 [ {text: ''}, {text: ''} ] text必须有
+                    data: data,
+                    // 颜色的数组
+                    color: colorArr,
+                    // 多少个data 分一组
+                    groupSlice: 5,
+                    // 多少秒增加一次dom  这个关乎到弹幕的左右间距（ 密集度 ）
+                    addIntervar: 3000,
+                    // 动画时间 25 ~ 20s
+                    rangeTime: [ 25, 20 ]
+                };
+                this.result = $.extend( true, defaults, option );
+                this.height = 0;
+                this.width = 0;
+                this.$el = null;
+                this.groupSlice = this.result.groupSlice;
+                this.colorLength = this.result.color.length - 1;
+                this._init();
+            };
+            Barrager.prototype = {
+                constructor: Barrager,
+                _init: function(){
+                    this.$el = $( this.result.el );
+                    this._getWH();
+                    this._group();
+                    this._clearOver();
+                    this._hideBarager();
+                },
+                // 获取当前dom的宽高并且当窗口重新变化的时候重设宽高
+                _getWH: function(){
+                    var $window = $(window),
+                        timeId = null,
+                        _this = this;
+                    // 减去最下面一行文字的高度    
+                    this.height = $window.height() - 20;
+                    this.width = $window.width();
+                    $window.on('resize', function(){
+                        clearTimeout( timeId );
+                        timeId = setTimeout( function(){
+                            _this.height = $window.height();
+                            _this.width = $window.width();
+                        }, 400 )
+                    })
+                },
+                // 数组根据groupSlice 进行分组  大概意思就是没次添加多少个DOM
+                _group: function(){
+                    var data = this.result.data,
+                        _this = this,
+                        length = data.length,
+                        groupNum = this._getGroupNum( length ),
+                        nowGroup = 1,
+                        arr =  data.slice( 0, this.groupSlice ),
+                        timeId = null;
+                    // 刚执行时先添加前几个DOM  避免等待时间    
+                    this._addDom(arr); 
+                    timeId = setInterval( function(){
+                        nowGroup++;
+                        var lastNum = nowGroup * _this.groupSlice;
+                        arr = data.slice( lastNum - _this.groupSlice, lastNum  )
+                        _this._addDom(arr);
+                        // 数组循环完毕重新循环数组  就是重复循环弹幕列表
+                        nowGroup >= groupNum && (nowGroup = 1)
+                    }, this.result.addIntervar )    
+    
+                },
+                // 根据分组的间距  获得共有多少组
+                _getGroupNum: function( length ){
+                    return Math.ceil( length / this.groupSlice )    
+                },
+                // 添加DOM
+                _addDom: function(arr){
+                    var _this = this;
+                    for( var i = 0, l = arr.length; i < l; i++ ){
+                    (function(i){
+                            _this._getDom( arr[i] )
+                    })(i);
+                    }
+                    this._start();
+                },
+                // 获取DOM结构  这个就是弹幕的结构
+                _getDom: function( obj ){
+                    this.$el.append( '<div class="barrager-item "  style="transform: translateX('+ ( this.width + 100 ) +'px); font-size: '+ this._getRangeTime( 24, 16 ) +'px; top: '+ this._getHeight() +'px; transition: transform '+ this._getRangeTime( this.result.rangeTime[0] , this.result.rangeTime[1]) +'s linear; color:'+ this._getRandomColor() +'" > '+ obj.text +' </div>' )   
+                },
+                // 获取在这个范围内的随机数
+                _getRangeTime: function( Max, Min ){
+                    isNaN( Max ) && ( Max = 15 );
+                    isNaN( Min ) && ( Min = 10 );
+                    var Range = Max - Min,
+                    // 最小数加上范围（最大数减去最小数向下取整）
+                        num = Min + Math.floor( Math.random() * Range ); //舍去
+                    return num;
+                },
+                // 获取最大多少的随机数
+                _getSingleTime: function( second ){
+                    isNaN( second ) && (second = 15);
+                    return parseInt( Math.random() * second ) + 1;
+                },
+                // 获取弹幕的随机距离页面顶部的位置  因为弹幕是position absolute  就是top值
+                _getHeight: function(){
+                    return this._getSingleTime( this.height ) 
+                },
+                // 获取随机色
+                _getRandomColor: function(){
+                    // console.log(this._getSingleTime( this.colorLengh ) )
+                    return colorArr[ this._getSingleTime( this.colorLength ) ];
+                },
+                // 添加dom后的200毫秒内增加样式 不延迟 css3动画不生效 
+                _start: function(){
+                    setTimeout( function(){
+                        $('.barrager-item').css('transform', 'translateX( -800px )')
+                    }, 200 )
+                },
+                // 当DOM超出后  删除DOM
+                _clearOver: function(){
+                    setInterval( function(){
+                        var $dom = $('.barrager-item');
+                        for( var i = 0, l = $dom.length; i < l; i++  ){
+                            var item = $dom[i],
+                                position = item.getBoundingClientRect();
+                            if( position && position.left <= -300 ){
+                                $dom.eq(i).remove();
+                            }
+                        }
+                    }, 3000 )
+                },
+                // 点击关闭弹幕关闭
+                _hideBarager: function(){
+                    var $el = $(this.result.closeEl),
+                        $barrage = $(this.result.el);
+                    !( $el.hasClass('active') ) && $el.addClass('active'); 
+                    $el.click( function(){
+                        var $this = $(this);
+                        if( $this.hasClass('active') ){
+                            $this.text('打开弹幕').removeClass('active');
+                            $barrage.hide();
+                        }else{
+                            $this.text('关闭弹幕').addClass('active');
+                            $barrage.show();
+                        }
+                    } )
+                }
+            }
+            new Barrager();
+        })();
+    </script>
+</body>
+</html>
