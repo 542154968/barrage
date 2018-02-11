@@ -2,7 +2,7 @@
 ![Image](https://github.com/542154968/barrage/blob/master/showImgs/show.jpg)
 
 # 简介
-受剧中人大神和falseLuffy的启发 为我自己工作的的项目增加了这个功能 因为需求比较少 所以是个很简单的文字DOM滚动功能 CSS3实现的滚动
+受剧中人和falseLuffy大神的启发 为我自己工作的的项目增加了这个功能 因为需求比较少 所以是个很简单的文字DOM滚动功能 CSS3实现的滚动
 
 ```JavaScript
 // 默认参数
